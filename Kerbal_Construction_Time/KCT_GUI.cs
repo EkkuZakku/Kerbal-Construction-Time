@@ -46,7 +46,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label(KCT_GameStates.activeVessel.Parts.Count.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_GameStates.buildTime.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label(KCT_Utilities.getFormatedTime(KCT_GameStates.UT - KCT_GameStates.finishDate), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            GUILayout.Label(KCT_Utilities.getFormatedTime(KCT_GameStates.finishDate - KCT_GameStates.UT), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(Planetarium.GetUniversalTime().ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.EndVertical();
 
