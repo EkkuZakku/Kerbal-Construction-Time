@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using KSP;
 
 namespace Kerbal_Construction_Time
 {
@@ -26,7 +25,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label("#Parts", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label("Build Time (s)", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label("Finish Time: ", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            GUILayout.Label("Build Time Remaining: ", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label("UT: ", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             if (GUILayout.Button("Warp until ready.", GUILayout.ExpandWidth(true)))
             {
@@ -47,7 +46,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label(KCT_GameStates.activeVessel.Parts.Count.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_GameStates.buildTime.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label(KCT_GameStates.finishDate.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            GUILayout.Label(KCT_Utilities.getFormatedTime(KCT_GameStates.UT - KCT_GameStates.finishDate), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(Planetarium.GetUniversalTime().ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.EndVertical();
 

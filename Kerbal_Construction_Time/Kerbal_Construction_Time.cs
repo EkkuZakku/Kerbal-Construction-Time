@@ -147,7 +147,7 @@ namespace Kerbal_Construction_Time
 
             }
 
-            KCT_GameStates.buildTime = KCT_GameStates.totalCost;
+            KCT_GameStates.buildTime = KCT_GameStates.totalCost * KCT_GameStates.activeVessel.Parts.Count;
             KCT_GameStates.finishDate = KCT_GameStates.UT + KCT_GameStates.buildTime;
 
             //warpedOnce = false;
