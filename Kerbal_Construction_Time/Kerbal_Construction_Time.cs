@@ -8,18 +8,26 @@ using KSP;
 namespace Kerbal_Construction_Time
 {
 
+    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
+    public class KCT_Tracking_Station : Kerbal_Construction_Time
+    {
+
+    }
+
     [KSPAddon(KSPAddon.Startup.Flight, false)]
+    public class KCT_Flight : Kerbal_Construction_Time
+    {
+
+    }
+
+    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
+    public class KCT_Editor : Kerbal_Construction_Time
+    {
+
+    }
+
     public class Kerbal_Construction_Time : MonoBehaviour
     {
-        private static Rect windowPosition = new Rect(200, 200, 350, 200);
-        private static GUIStyle windowStyle = null;
-        private int totalCost, buildTime = 0;
-        private double finishDate, UT;
-        private Vessel activeVessel;
-        private bool builtOnce = false, warpedOnce = true;
-        private Dictionary<string, string> lstVessels = new Dictionary<string, string>();
-        public List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
-        public List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
 
         public void Awake()
         {
@@ -29,15 +37,14 @@ namespace Kerbal_Construction_Time
 
         private void OnDraw()
         {
-            windowPosition = GUI.Window(1234, windowPosition, OnWindow, "VAB+SPH Time Clock", windowStyle);
+            KCT_GUI.SetWindowPosition(OnWindow);
 
         }
 
         public void Start()
         {
-            windowStyle = new GUIStyle(HighLogic.Skin.window);
-            UT = Planetarium.GetUniversalTime();
-
+            KCT_GameStates.UT = Planetarium.GetUniversalTime();
+            
             //// Vessel activeVessel = FlightGlobals.fetch.ActiveVessel;
             // ConstructionVessel newConstructionVessel = new ConstructionVessel(activeVessel);
             // pause
@@ -66,15 +73,15 @@ namespace Kerbal_Construction_Time
             ////     Allow ship to launch (load with fuel)
             //
 
-            activeVessel = FlightGlobals.fetch.activeVessel;
+            KCT_GameStates.activeVessel = FlightGlobals.fetch.activeVessel;
 
-            if (activeVessel.situation == Vessel.Situations.PRELAUNCH && builtOnce == false)
+            if (KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.builtOnce == false)
             {
                 PreBuild();
 
             }
 
-            builtOnce = true;
+            KCT_GameStates.builtOnce = true;
 
         }
 
@@ -82,24 +89,25 @@ namespace Kerbal_Construction_Time
         {
             try
             {
-                if (warpedOnce == false && (UT = Planetarium.GetUniversalTime()) < finishDate)
+                if (KCT_GameStates.warpedOnce == false && (KCT_GameStates.UT = Planetarium.GetUniversalTime()) < KCT_GameStates.finishDate)
                 {
                     int warpRate = TimeWarp.CurrentRateIndex;
 
                     if (SOIAlert())
                     {
                         TimeWarp.SetRate(0, true);
-                        warpedOnce = true;
+                        KCT_GameStates.warpedOnce = true;
 
                     }
                     else
                     {
-                        if ((finishDate - UT) < Math.Pow(4, warpRate) && (finishDate - UT) < Math.Pow(4, warpRate - 1))// || SOIAlert())
+                        if ((KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate) &&
+                            (KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate - 1))// || SOIAlert())
                         {
                             TimeWarp.SetRate(--warpRate, true);
 
                         }
-                        else if ((finishDate - UT) > Math.Pow(4, warpRate) && TimeWarp.CurrentRateIndex < 7)// && !SOIAlert())
+                        else if ((KCT_GameStates.finishDate - KCT_GameStates.UT) > Math.Pow(4, warpRate) && TimeWarp.CurrentRateIndex < 7)// && !SOIAlert())
                         {
                             TimeWarp.SetRate(++warpRate, true);
 
@@ -108,11 +116,11 @@ namespace Kerbal_Construction_Time
                     }
 
                 }
-                else if (warpedOnce == false && activeVessel.situation == Vessel.Situations.PRELAUNCH)
+                else if (KCT_GameStates.warpedOnce == false && KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH)
                 {
-                    ManageFuel(activeVessel, true);
+                    ManageFuel(KCT_GameStates.activeVessel, true);
 
-                    warpedOnce = true;
+                    KCT_GameStates.warpedOnce = true;
 
                 }
             }
@@ -131,16 +139,16 @@ namespace Kerbal_Construction_Time
         /// TODO: Make this method also manage multiple vessels to build.
         private void PreBuild()
         {
-            ManageFuel(activeVessel, false);
+            ManageFuel(KCT_GameStates.activeVessel, false);
 
-            foreach (Part p in activeVessel.Parts)
+            foreach (Part p in KCT_GameStates.activeVessel.Parts)
             {
-                totalCost += p.partInfo.cost;
+                KCT_GameStates.totalCost += p.partInfo.cost;
 
             }
 
-            buildTime = totalCost;
-            finishDate = UT + buildTime;
+            KCT_GameStates.buildTime = KCT_GameStates.totalCost;
+            KCT_GameStates.finishDate = KCT_GameStates.UT + KCT_GameStates.buildTime;
 
             //warpedOnce = false;
 
@@ -172,20 +180,20 @@ namespace Kerbal_Construction_Time
         {
             foreach (Vessel v in FlightGlobals.Vessels)
             {
-                if (VesselTypesForSOI.Contains(v.vesselType))// && SOITransitions.Contains(v.orbit.patchEndTransition))
+                if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))// && SOITransitions.Contains(v.orbit.patchEndTransition))
                 {
-                    if (v != activeVessel)
+                    if (v != KCT_GameStates.activeVessel)
                     {
-                        if (!lstVessels.ContainsKey(v.id.ToString()))
+                        if (!KCT_GameStates.lstVessels.ContainsKey(v.id.ToString()))
                         {
-                            lstVessels.Add(v.id.ToString(), v.mainBody.bodyName);
+                            KCT_GameStates.lstVessels.Add(v.id.ToString(), v.mainBody.bodyName);
                             print("Vessel " + v.id.ToString() + " added to lstVessels.");
 
                         }
-                        else if (v.mainBody.bodyName != lstVessels[v.id.ToString()])
+                        else if (v.mainBody.bodyName != KCT_GameStates.lstVessels[v.id.ToString()])
                         {
                             print("Vessel " + v.id.ToString() + " SOI change.");
-                            lstVessels[v.id.ToString()] = v.mainBody.bodyName;
+                            KCT_GameStates.lstVessels[v.id.ToString()] = v.mainBody.bodyName;
                             return true;
 
                         }
@@ -202,50 +210,7 @@ namespace Kerbal_Construction_Time
 
         private void OnWindow(int windowID)
         {
-            GUIStyle mySty = new GUIStyle(GUI.skin.button);
-            mySty.normal.textColor = mySty.focused.textColor = Color.white;
-            mySty.hover.textColor = mySty.active.textColor = Color.yellow;
-            mySty.onNormal.textColor = mySty.onFocused.textColor = mySty.onHover.textColor = mySty.onActive.textColor = Color.green;
-            mySty.padding = new RectOffset(16, 16, 8, 8);
-
-            //sets the layout for the GUI, which is pretty much just some debug stuff for me.
-            GUILayout.BeginHorizontal();
-
-            GUILayout.BeginVertical();
-            GUILayout.Label("#Parts", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label("Build Time (s)", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label("Finish Time: ", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label("UT: ", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            if (GUILayout.Button("Warp until ready.", GUILayout.ExpandWidth(true)))
-            {
-                foreach (Vessel v in FlightGlobals.Vessels)
-                {
-                    if (v.situation == Vessel.Situations.PRELAUNCH && v != activeVessel)
-                    {
-                        FlightGlobals.SetActiveVessel(v);
-
-                    }
-
-                }
-                warpedOnce = false;
-
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-            GUILayout.Label(activeVessel.Parts.Count.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label(buildTime.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label(finishDate.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label(Planetarium.GetUniversalTime().ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
-
-            //DragWindow makes the window draggable. The Rect specifies which part of the window it can by dragged by, and is 
-            //clipped to the actual boundary of the window. You can also pass no argument at all and then the window can by
-            //dragged by any part of it. Make sure the DragWindow command is AFTER all your other GUI input stuff, or else
-            //it may "cover up" your controls and make them stop responding to the mouse.
-            GUI.DragWindow();
+            KCT_GUI.drawWindow(windowID);
 
         }
 
