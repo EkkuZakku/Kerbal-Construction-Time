@@ -8,11 +8,11 @@ using KSP;
 namespace Kerbal_Construction_Time
 {
 
-    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
-    public class KCT_Tracking_Station : Kerbal_Construction_Time
-    {
+    //[KSPAddon(KSPAddon.Startup.TrackingStation, false)]
+    //public class KCT_Tracking_Station : Kerbal_Construction_Time
+    //{
 
-    }
+    //}
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KCT_Flight : Kerbal_Construction_Time
@@ -20,11 +20,11 @@ namespace Kerbal_Construction_Time
 
     }
 
-    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
-    public class KCT_Editor : Kerbal_Construction_Time
-    {
+    //[KSPAddon(KSPAddon.Startup.EditorAny, false)]
+    //public class KCT_Editor : Kerbal_Construction_Time
+    //{
 
-    }
+    //}
 
     public class Kerbal_Construction_Time : MonoBehaviour
     {
@@ -37,14 +37,18 @@ namespace Kerbal_Construction_Time
 
         private void OnDraw()
         {
-            KCT_GUI.SetWindowPosition(OnWindow);
+            KCT_GUI.SetGUIPositions(OnWindow);
+
+        }
+
+        private void OnWindow(int windowID)
+        {
+            KCT_GUI.drawGUIs(windowID);
 
         }
 
         public void Start()
         {
-            KCT_GameStates.UT = Planetarium.GetUniversalTime();
-            
             //// Vessel activeVessel = FlightGlobals.fetch.ActiveVessel;
             // ConstructionVessel newConstructionVessel = new ConstructionVessel(activeVessel);
             // pause
@@ -73,15 +77,20 @@ namespace Kerbal_Construction_Time
             ////     Allow ship to launch (load with fuel)
             //
 
-            KCT_GameStates.activeVessel = FlightGlobals.fetch.activeVessel;
-
-            if (KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.builtOnce == false)
+            if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                PreBuild();
+                KCT_GameStates.activeVessel = FlightGlobals.fetch.activeVessel;
+
+                if (KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.builtOnce == false)
+                {
+                    PreBuild();
+
+                }
+
+                KCT_GameStates.builtOnce = true;
 
             }
 
-            KCT_GameStates.builtOnce = true;
 
         }
 
@@ -194,8 +203,10 @@ namespace Kerbal_Construction_Time
                         }
                         else if (v.mainBody.bodyName != KCT_GameStates.lstVessels[v.id.ToString()])
                         {
+                            KCT_GameStates.lastSOIVessel = v.name;
                             print("Vessel " + v.id.ToString() + " SOI change.");
                             KCT_GameStates.lstVessels[v.id.ToString()] = v.mainBody.bodyName;
+                            KCT_GameStates.showSOIAlert = true;
                             return true;
 
                         }
@@ -207,12 +218,6 @@ namespace Kerbal_Construction_Time
             }
 
             return false;
-
-        }
-
-        private void OnWindow(int windowID)
-        {
-            KCT_GUI.drawWindow(windowID);
 
         }
 
