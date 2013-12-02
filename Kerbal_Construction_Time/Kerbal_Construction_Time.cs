@@ -87,9 +87,11 @@ namespace Kerbal_Construction_Time
 
         public void FixedUpdate()
         {
+            KCT_GameStates.UT = Planetarium.GetUniversalTime();
+
             try
             {
-                if (KCT_GameStates.warpedOnce == false && (KCT_GameStates.UT = Planetarium.GetUniversalTime()) < KCT_GameStates.finishDate)
+                if (KCT_GameStates.warpedOnce == false && (KCT_GameStates.UT) < KCT_GameStates.finishDate)
                 {
                     int warpRate = TimeWarp.CurrentRateIndex;
 
@@ -147,7 +149,7 @@ namespace Kerbal_Construction_Time
 
             }
 
-            KCT_GameStates.buildTime = KCT_GameStates.totalCost * KCT_GameStates.activeVessel.Parts.Count;
+            KCT_GameStates.buildTime = KCT_GameStates.totalCost / 10 * KCT_GameStates.activeVessel.Parts.Count;
             KCT_GameStates.finishDate = KCT_GameStates.UT + KCT_GameStates.buildTime;
 
             //warpedOnce = false;

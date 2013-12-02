@@ -8,6 +8,11 @@ namespace Kerbal_Construction_Time
 {
     static class KCT_Utilities
     {
+        /// <summary>
+        /// Formats a string from a time value into days, hours, minutes, and seconds.
+        /// </summary>
+        /// <param name="time">Time in seconds</param>
+        /// <returns></returns>
         public static string getFormatedTime(double time)
         {
             StringBuilder formatedTime = new StringBuilder();
@@ -20,7 +25,9 @@ namespace Kerbal_Construction_Time
             formatedTime.AppendFormat("{0,2:0} seconds", time);
 
             return formatedTime.ToString();
+
         }
+
     }
 
 }
