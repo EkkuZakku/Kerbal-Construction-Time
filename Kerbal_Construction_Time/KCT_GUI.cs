@@ -93,7 +93,6 @@ namespace Kerbal_Construction_Time
                 TimeWarp.SetRate(0, true);
 
             }
-            GUILayout.Label(KCT_GameStates.totalCost.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
