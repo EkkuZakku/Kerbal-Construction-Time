@@ -6,21 +6,16 @@ using System.Threading.Tasks;
 
 namespace Kerbal_Construction_Time
 {
-    public static class KCT_GameStates
+    public class KCTVessel
     {
-        public static double UT;
-        public static KCTVessel activeVessel = null;
-        public static int activeVesselIndex;
-        public static List<KCTVessel> vesselList = new List<KCTVessel>();
-        public static int totalCost;
-        public static double buildTime = 0, finishDate;
-        public static bool canWarp = false, warpRateReached = false;
-        public static bool showMainGUI = true, showSOIAlert = false;
-        public static string lastSOIVessel = "";
-        public static Dictionary<string, string> vesselDict = new Dictionary<string, string>();
-        public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
-        public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
-        //public static GameScenes currentScene;
+        public Vessel vessel;
+        public bool builtOnce = false;
+
+        public KCTVessel(Vessel vessel)
+        {
+            this.vessel = vessel;
+
+        }
 
     }
 

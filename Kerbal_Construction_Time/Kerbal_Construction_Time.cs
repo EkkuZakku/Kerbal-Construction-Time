@@ -77,17 +77,46 @@ namespace Kerbal_Construction_Time
             ////     Allow ship to launch (load with fuel)
             //
 
+            KCT_GameStates.UT = Planetarium.GetUniversalTime();
+
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                KCT_GameStates.activeVessel = FlightGlobals.fetch.activeVessel;
+                if (KCT_GameStates.activeVessel == null || FlightGlobals.fetch.activeVessel != KCT_GameStates.activeVessel.vessel)
+                {
+                    KCT_GameStates.activeVessel = new KCTVessel(FlightGlobals.fetch.activeVessel);
 
-                if (KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.builtOnce == false)
+                }
+                else
+                {
+                    KCT_GameStates.activeVessel.vessel = FlightGlobals.fetch.activeVessel;
+                }
+
+                foreach (KCTVessel kctv in KCT_GameStates.vesselList)
+                {
+                    if (KCT_GameStates.activeVessel.vessel.id == kctv.vessel.id)
+                    {
+                        KCT_GameStates.activeVessel = kctv;
+                        KCT_GameStates.activeVesselIndex = KCT_GameStates.vesselList.IndexOf(kctv);
+                        break;
+
+                    }
+
+                }
+
+                if (!KCT_GameStates.vesselList.Contains(KCT_GameStates.activeVessel))
+                {
+                    KCT_GameStates.vesselList.Add(KCT_GameStates.activeVessel);
+
+                }
+
+                if (KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.activeVessel.builtOnce == false)
                 {
                     PreBuild();
 
                 }
 
-                KCT_GameStates.builtOnce = true;
+                KCT_GameStates.vesselList[KCT_GameStates.activeVesselIndex].builtOnce = true;
+                KCT_GameStates.activeVessel.builtOnce = true;
 
             }
 
@@ -100,38 +129,47 @@ namespace Kerbal_Construction_Time
 
             try
             {
-                if (KCT_GameStates.warpedOnce == false && (KCT_GameStates.UT) < KCT_GameStates.finishDate)
+                if (KCT_GameStates.canWarp == true && (KCT_GameStates.UT) < KCT_GameStates.finishDate)
                 {
                     int warpRate = TimeWarp.CurrentRateIndex;
 
                     if (SOIAlert())
                     {
                         TimeWarp.SetRate(0, true);
-                        KCT_GameStates.warpedOnce = true;
+                        KCT_GameStates.canWarp = false;
+                        KCT_GameStates.warpRateReached = false;
 
                     }
                     else
                     {
                         if ((KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate) &&
-                            (KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate - 1))// || SOIAlert())
+                            (KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate - 1))
                         {
                             TimeWarp.SetRate(--warpRate, true);
 
                         }
-                        else if ((KCT_GameStates.finishDate - KCT_GameStates.UT) > Math.Pow(4, warpRate) && TimeWarp.CurrentRateIndex < 7)// && !SOIAlert())
+                        else if (warpRate == 0 && KCT_GameStates.warpRateReached)
+                        {
+                            KCT_GameStates.canWarp = false;
+                            KCT_GameStates.warpRateReached = false;
+
+                        }
+                        else if (warpRate < 7 && (KCT_GameStates.finishDate - KCT_GameStates.UT) > Math.Pow(4, warpRate))
                         {
                             TimeWarp.SetRate(++warpRate, true);
+                            KCT_GameStates.warpRateReached = true;
 
                         }
 
                     }
 
                 }
-                else if (KCT_GameStates.warpedOnce == false && KCT_GameStates.activeVessel.situation == Vessel.Situations.PRELAUNCH)
+                else if (KCT_GameStates.canWarp == true && KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH)
                 {
-                    ManageFuel(KCT_GameStates.activeVessel, true);
+                    ManageFuel(KCT_GameStates.activeVessel.vessel, true);
 
-                    KCT_GameStates.warpedOnce = true;
+                    KCT_GameStates.canWarp = false;
+                    KCT_GameStates.warpRateReached = false;
 
                 }
             }
@@ -150,15 +188,16 @@ namespace Kerbal_Construction_Time
         /// TODO: Make this method also manage multiple vessels to build.
         private void PreBuild()
         {
-            ManageFuel(KCT_GameStates.activeVessel, false);
+            ManageFuel(KCT_GameStates.activeVessel.vessel, false);
+            KCT_GameStates.totalCost = 0;
 
-            foreach (Part p in KCT_GameStates.activeVessel.Parts)
+            foreach (Part p in KCT_GameStates.activeVessel.vessel.Parts)
             {
                 KCT_GameStates.totalCost += p.partInfo.cost;
 
             }
 
-            KCT_GameStates.buildTime = KCT_GameStates.totalCost / 10 * KCT_GameStates.activeVessel.Parts.Count;
+            KCT_GameStates.buildTime = (Math.Sqrt(KCT_GameStates.totalCost)) * 2000;// /10 *KCT_GameStates.activeVessel.vessel.Parts.Count;
             KCT_GameStates.finishDate = KCT_GameStates.UT + KCT_GameStates.buildTime;
 
             //warpedOnce = false;
@@ -193,19 +232,19 @@ namespace Kerbal_Construction_Time
             {
                 if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))// && SOITransitions.Contains(v.orbit.patchEndTransition))
                 {
-                    if (v != KCT_GameStates.activeVessel)
+                    if (v != KCT_GameStates.activeVessel.vessel)
                     {
-                        if (!KCT_GameStates.lstVessels.ContainsKey(v.id.ToString()))
+                        if (!KCT_GameStates.vesselDict.ContainsKey(v.id.ToString()))
                         {
-                            KCT_GameStates.lstVessels.Add(v.id.ToString(), v.mainBody.bodyName);
+                            KCT_GameStates.vesselDict.Add(v.id.ToString(), v.mainBody.bodyName);
                             print("Vessel " + v.id.ToString() + " added to lstVessels.");
 
                         }
-                        else if (v.mainBody.bodyName != KCT_GameStates.lstVessels[v.id.ToString()])
+                        else if (v.mainBody.bodyName != KCT_GameStates.vesselDict[v.id.ToString()])
                         {
                             KCT_GameStates.lastSOIVessel = v.name;
                             print("Vessel " + v.id.ToString() + " SOI change.");
-                            KCT_GameStates.lstVessels[v.id.ToString()] = v.mainBody.bodyName;
+                            KCT_GameStates.vesselDict[v.id.ToString()] = v.mainBody.bodyName;
                             KCT_GameStates.showSOIAlert = true;
                             return true;
 

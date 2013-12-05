@@ -70,24 +70,30 @@ namespace Kerbal_Construction_Time
             {
                 foreach (Vessel v in FlightGlobals.Vessels)
                 {
-                    if (v.situation == Vessel.Situations.PRELAUNCH && v != KCT_GameStates.activeVessel)
+                    if (v.situation == Vessel.Situations.PRELAUNCH && v != KCT_GameStates.activeVessel.vessel)
                     {
                         FlightGlobals.SetActiveVessel(v);
 
                     }
 
                 }
-                KCT_GameStates.warpedOnce = false;
+                KCT_GameStates.canWarp = true;
 
             }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            GUILayout.Label(KCT_GameStates.activeVessel.Parts.Count.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            GUILayout.Label(KCT_GameStates.activeVessel.vessel.Parts.Count.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_GameStates.buildTime.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_Utilities.getFormatedTime(KCT_GameStates.finishDate - KCT_GameStates.UT), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_GameStates.UT.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            GUILayout.Label("", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            if (GUILayout.Button("Stop warp", GUILayout.ExpandWidth(true)))
+            {
+                KCT_GameStates.canWarp = false;
+                TimeWarp.SetRate(0, true);
+
+            }
+            GUILayout.Label(KCT_GameStates.totalCost.ToString(), GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
