@@ -20,11 +20,17 @@ namespace Kerbal_Construction_Time
 
     }
 
-    //[KSPAddon(KSPAddon.Startup.EditorAny, false)]
-    //public class KCT_Editor : Kerbal_Construction_Time
-    //{
+    [KSPAddon(KSPAddon.Startup.EditorVAB, false)]
+    public class KCT_VABEditor : Kerbal_Construction_Time
+    {
 
-    //}
+    }
+
+    [KSPAddon(KSPAddon.Startup.EditorSPH, false)]
+    public class KCT_SPHEditor : Kerbal_Construction_Time
+    {
+
+    }
 
     public class Kerbal_Construction_Time : MonoBehaviour
     {
@@ -43,7 +49,7 @@ namespace Kerbal_Construction_Time
 
         private void OnWindow(int windowID)
         {
-            KCT_GUI.drawGUIs(windowID);
+            KCT_GUI.DrawGUIs(windowID);
 
         }
 
@@ -81,7 +87,10 @@ namespace Kerbal_Construction_Time
 
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
-                if (KCT_GameStates.activeVessel == null || FlightGlobals.fetch.activeVessel != KCT_GameStates.activeVessel.vessel)
+                KCT_GameStates.showEditorGUI = false;
+                KCT_GameStates.showMainGUI = true;
+
+                if ((KCT_GameStates.activeVessel == null) || (FlightGlobals.fetch.activeVessel != KCT_GameStates.activeVessel.vessel))
                 {
                     KCT_GameStates.activeVessel = new KCTVessel(FlightGlobals.fetch.activeVessel);
 
@@ -109,7 +118,7 @@ namespace Kerbal_Construction_Time
 
                 }
 
-                if (KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.activeVessel.builtOnce == false)
+                if ((KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH) && (KCT_GameStates.activeVessel.builtOnce == false))
                 {
                     PreBuild();
 
@@ -118,6 +127,12 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.vesselList[KCT_GameStates.activeVesselIndex].builtOnce = true;
                 KCT_GameStates.activeVessel.builtOnce = true;
 
+            }
+            else if ((HighLogic.LoadedScene == GameScenes.EDITOR) || (HighLogic.LoadedScene == GameScenes.SPH))
+            {
+                KCT_GameStates.showMainGUI = false;
+                KCT_GameStates.showSOIAlert = false;
+                KCT_GameStates.showEditorGUI = true;
             }
 
 
@@ -129,7 +144,7 @@ namespace Kerbal_Construction_Time
 
             try
             {
-                if (KCT_GameStates.canWarp == true && (KCT_GameStates.UT) < KCT_GameStates.finishDate)
+                if ((KCT_GameStates.canWarp == true) && (KCT_GameStates.UT < KCT_GameStates.activeVessel.finishDate))
                 {
                     int warpRate = TimeWarp.CurrentRateIndex;
 
@@ -142,8 +157,8 @@ namespace Kerbal_Construction_Time
                     }
                     else
                     {
-                        if ((KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate) &&
-                            (KCT_GameStates.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate - 1))
+                        if (((KCT_GameStates.activeVessel.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate)) &&
+                            ((KCT_GameStates.activeVessel.finishDate - KCT_GameStates.UT) < Math.Pow(4, warpRate - 1)))
                         {
                             TimeWarp.SetRate(--warpRate, true);
 
@@ -154,7 +169,7 @@ namespace Kerbal_Construction_Time
                             KCT_GameStates.warpRateReached = false;
 
                         }
-                        else if (warpRate < 7 && (KCT_GameStates.finishDate - KCT_GameStates.UT) > Math.Pow(4, warpRate))
+                        else if ((warpRate < 7) && ((KCT_GameStates.activeVessel.finishDate - KCT_GameStates.UT) > Math.Pow(4, warpRate)))
                         {
                             TimeWarp.SetRate(++warpRate, true);
                             KCT_GameStates.warpRateReached = true;
@@ -164,7 +179,7 @@ namespace Kerbal_Construction_Time
                     }
 
                 }
-                else if (KCT_GameStates.canWarp == true && KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH)
+                else if ((KCT_GameStates.canWarp == true) && (KCT_GameStates.activeVessel.vessel.situation == Vessel.Situations.PRELAUNCH))
                 {
                     ManageFuel(KCT_GameStates.activeVessel.vessel, true);
 
@@ -189,16 +204,9 @@ namespace Kerbal_Construction_Time
         private void PreBuild()
         {
             ManageFuel(KCT_GameStates.activeVessel.vessel, false);
-            KCT_GameStates.totalCost = 0;
 
-            foreach (Part p in KCT_GameStates.activeVessel.vessel.Parts)
-            {
-                KCT_GameStates.totalCost += p.partInfo.cost;
-
-            }
-
-            KCT_GameStates.buildTime = (Math.Sqrt(KCT_GameStates.totalCost)) * 2000;// /10 *KCT_GameStates.activeVessel.vessel.Parts.Count;
-            KCT_GameStates.finishDate = KCT_GameStates.UT + KCT_GameStates.buildTime;
+            KCT_GameStates.activeVessel.buildTime = KCT_Utilities.GetBuildTime(KCT_GameStates.activeVessel.vessel.Parts);
+            KCT_GameStates.activeVessel.finishDate = KCT_GameStates.UT + KCT_GameStates.activeVessel.buildTime;
 
             //warpedOnce = false;
 

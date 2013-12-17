@@ -10,6 +10,7 @@ namespace Kerbal_Construction_Time
     {
         public Vessel vessel;
         public bool builtOnce = false;
+        public double buildTime = 0, finishDate;
 
         public KCTVessel(Vessel vessel)
         {

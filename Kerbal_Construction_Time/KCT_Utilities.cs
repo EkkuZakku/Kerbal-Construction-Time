@@ -13,18 +13,37 @@ namespace Kerbal_Construction_Time
         /// </summary>
         /// <param name="time">Time in seconds</param>
         /// <returns></returns>
-        public static string getFormatedTime(double time)
+        public static string GetFormatedTime(double time)
         {
-            StringBuilder formatedTime = new StringBuilder();
-            formatedTime.AppendFormat("{0,2:0} days, ", Math.Floor(time / 86400));
-            time = time % 86400;
-            formatedTime.AppendFormat("{0,2:0} hours, ", Math.Floor(time / 3600));
-            time = time % 3600;
-            formatedTime.AppendFormat("{0,2:0} minutes, ", Math.Floor(time / 60));
-            time = time % 60;
-            formatedTime.AppendFormat("{0,2:0} seconds", time);
+            if (time > 0)
+            {
+                StringBuilder formatedTime = new StringBuilder();
+                formatedTime.AppendFormat("{0,2:0} days, ", Math.Floor(time / 86400));
+                time = time % 86400;
+                formatedTime.AppendFormat("{0,2:0} hours, ", Math.Floor(time / 3600));
+                time = time % 3600;
+                formatedTime.AppendFormat("{0,2:0} minutes, ", Math.Floor(time / 60));
+                time = time % 60;
+                formatedTime.AppendFormat("{0,2:0} seconds", time);
 
-            return formatedTime.ToString();
+                return formatedTime.ToString();
+            }
+            else
+            {
+                return "0 days,  0 hours,  0 minutes,  0 seconds";
+            }
+
+        }
+
+        public static double GetBuildTime(List<Part> parts)
+        {
+            double totalCost = 0;
+            foreach (Part p in parts)
+            {
+                totalCost += p.partInfo.cost;
+            }
+
+            return Math.Sqrt(totalCost) * 2000; // /10 *KCT_GameStates.activeVessel.vessel.Parts.Count;
 
         }
 
