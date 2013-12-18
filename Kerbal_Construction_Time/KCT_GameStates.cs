@@ -19,7 +19,12 @@ namespace Kerbal_Construction_Time
         public static Dictionary<string, string> vesselDict = new Dictionary<string, string>();
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
-        //public static GameScenes currentScene;
+
+        public static void SetVesselList(List<KCTVessel> newVesselList)
+        {
+            vesselList = newVesselList;
+
+        }
 
     }
 

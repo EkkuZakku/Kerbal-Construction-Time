@@ -50,6 +50,7 @@
     <Compile Include="KCTVessel.cs" />
     <Compile Include="KCT_GameStates.cs" />
     <Compile Include="KCT_GUI.cs" />
+    <Compile Include="KCT_Settings.cs" />
     <Compile Include="KCT_Utilities.cs" />
     <Compile Include="Kerbal_Construction_Time.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

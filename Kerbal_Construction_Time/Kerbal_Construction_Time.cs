@@ -17,7 +17,7 @@ namespace Kerbal_Construction_Time
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KCT_Flight : Kerbal_Construction_Time
     {
-
+        
     }
 
     [KSPAddon(KSPAddon.Startup.EditorVAB, false)]
@@ -34,6 +34,7 @@ namespace Kerbal_Construction_Time
 
     public class Kerbal_Construction_Time : MonoBehaviour
     {
+        KCT_Settings Settings = new KCT_Settings();
 
         public void Awake()
         {
@@ -83,6 +84,7 @@ namespace Kerbal_Construction_Time
             ////     Allow ship to launch (load with fuel)
             //
 
+            Settings.Load();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
@@ -115,6 +117,8 @@ namespace Kerbal_Construction_Time
                 if (!KCT_GameStates.vesselList.Contains(KCT_GameStates.activeVessel))
                 {
                     KCT_GameStates.vesselList.Add(KCT_GameStates.activeVessel);
+                    print(KCT_GameStates.activeVessel.vessel.name + " added to KCT VesselList");
+                    Settings.Save();
 
                 }
 
@@ -140,7 +144,19 @@ namespace Kerbal_Construction_Time
 
         public void FixedUpdate()
         {
+            
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
+            if (Math.Floor(KCT_GameStates.UT) % 500 == 0)
+            {
+                Settings.Save();
+                Settings.Load(); // TODO : REMOVE ME BEFORE COMMIT
+
+                foreach (KCTVessel kctv in KCT_GameStates.vesselList)
+                {
+                    print(kctv.vessel.name);
+                }
+
+            }
 
             try
             {
@@ -265,6 +281,12 @@ namespace Kerbal_Construction_Time
             }
 
             return false;
+
+        }
+
+        public static void Print(string message)
+        {
+            print(message);
 
         }
 
